@@ -37,15 +37,18 @@ export const ENEMIES:Enemy[]=[
 {id:"arlong",name:"Arlong",maxHp:1450,attack:108,defense:70,reward:1000,boss:true},
 ];
 export const MAP:MapNode[]=[
-{id:"n1",type:"battle",label:"Marine Patrol",description:"Una pattuglia della Marina blocca il passaggio.",row:1,col:1,links:["n2","n4"]},
-{id:"n2",type:"event",label:"Mysterious Island",description:"Un'isola nasconde un incontro inatteso.",row:1,col:2,links:["n3","n5"]},
-{id:"n3",type:"battle",label:"Rival Pirates",description:"Una ciurma rivale ha avvistato la tua nave.",row:1,col:3,links:["n6"]},
-{id:"n4",type:"treasure",label:"Treasure",description:"Un forziere galleggia tra le onde.",row:2,col:1,links:["n5","n7"]},
-{id:"n5",type:"rest",label:"Tavern",description:"Un posto sicuro per recuperare le forze.",row:2,col:2,links:["n6","n8"]},
-{id:"n6",type:"battle",label:"Fishmen",description:"Un gruppo di uomini-pesce difende il porto.",row:2,col:3,links:["n9"]},
-{id:"n7",type:"fruit",label:"Devil Fruit",description:"Un frutto misterioso è custodito su una piccola isola.",row:3,col:1,links:["n8"]},
-{id:"n8",type:"battle",label:"Warlord Crew",description:"Una ciurma al servizio di un potente pirata.",row:3,col:2,links:["n9"]},
-{id:"n9",type:"boss",label:"Arlong Park",description:"La strada finisce davanti al parco di Arlong.",row:3,col:3,links:[]},
+{id:"n1",type:"battle",label:"Reverse Mountain",description:"La nave entra nella Grand Line attraverso la montagna e il suo mare imprevedibile.",row:1,col:1,links:["n2","n4"]},
+{id:"n2",type:"event",label:"Whiskey Peak",description:"Un'isola di benvenuto dove una deviazione può cambiare la run.",row:1,col:2,links:["n3","n5"]},
+{id:"n3",type:"battle",label:"Little Garden",description:"Giungla, giganti e una minaccia che controlla il passaggio.",row:1,col:3,links:["n6","n8"]},
+{id:"n4",type:"treasure",label:"Jaya",description:"Un porto pieno di tesori, mappe e informazioni sulle rotte celesti.",row:2,col:1,links:["n5","n7"]},
+{id:"n5",type:"rest",label:"Drum Island",description:"Un rifugio innevato dove la ciurma può recuperare tutte le forze.",row:2,col:2,links:["n6","n9"]},
+{id:"n6",type:"battle",label:"Alabasta",description:"Una rotta desertica sorvegliata da una ciurma avversaria.",row:2,col:3,links:["n10"]},
+{id:"n7",type:"fruit",label:"Skypiea",description:"Una corrente verticale apre una rotta verso un'isola nel cielo.",row:3,col:1,links:["n9"]},
+{id:"n8",type:"battle",label:"Water 7",description:"Cantieri, maree e una potente ciurma rivale difendono il canale.",row:3,col:3,links:["n10"]},
+{id:"n9",type:"treasure",label:"Enies Lobby",description:"Un passaggio rischioso nasconde una ricompensa rara.",row:3,col:2,links:["n10"]},
+{id:"n10",type:"battle",label:"Sabaody",description:"L'ultima grande deviazione prima del fondo della Grand Line.",row:4,col:3,links:["n11"]},
+{id:"n11",type:"rest",label:"Fish-Man Island",description:"Un ultimo porto per prepararsi alla rotta successiva.",row:4,col:3,links:["n12"]},
+{id:"n12",type:"boss",label:"New World Gate",description:"La rotta termina davanti alla soglia del Nuovo Mondo.",row:4,col:4,links:[]},
 ];
 export const SYNERGIES=[
 {id:"straw_hat",name:"Straw Hat Crew",required:["straw_hat","straw_hat","straw_hat"],description:"+8% HP e +8% attacco alla squadra."},
