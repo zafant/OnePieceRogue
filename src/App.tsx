@@ -22,7 +22,7 @@ function App(){
  function log(message:string){setRun(r=>({...r,log:[message,...r.log].slice(0,8)}))}
  function chooseNode(id:string){
    const next=MAP.find(n=>n.id===id); const current=MAP.find(n=>n.id===run.currentNode);
-   if(!next||(!current?.links.includes(id)&&id!==run.currentNode))return;
+   if(!next||!current||id===current.id||!current.links.includes(id))return;
    setRun(r=>({...r,currentNode:id,stage:r.stage+1}));
    if(next.type==="battle"||next.type==="boss"){const e=enemyForNode(id);if(e){setEnemyHp(e.maxHp);setEnemyMax(e.maxHp);setScreen("battle");}return;}
    if(next.type==="treasure")setRun(r=>({...r,berries:r.berries+250,log:["💰 Tesoro: +250 Berries.",...r.log].slice(0,8)}));
