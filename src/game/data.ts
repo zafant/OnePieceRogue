@@ -44,10 +44,10 @@ export const MAP:MapNode[]=[
 {id:"n5",type:"rest",label:"Drum Island",description:"Un rifugio innevato dove la ciurma può recuperare tutte le forze.",row:2,col:2,links:["n6","n9"]},
 {id:"n6",type:"battle",label:"Alabasta",description:"Una rotta desertica sorvegliata da una ciurma avversaria.",row:2,col:3,links:["n10"]},
 {id:"n7",type:"fruit",label:"Skypiea",description:"Una corrente verticale apre una rotta verso un'isola nel cielo.",row:3,col:1,links:["n9"]},
-{id:"n8",type:"battle",label:"Water 7",description:"Cantieri, maree e una potente ciurma rivale difendono il canale.",row:3,col:3,links:["n10"]},
+{id:"n8",type:"battle",label:"Water 7",description:"Cantieri, maree e una potente ciurma rivale difendono il canale.",row:1,col:4,links:["n10"]},
 {id:"n9",type:"treasure",label:"Enies Lobby",description:"Un passaggio rischioso nasconde una ricompensa rara.",row:3,col:2,links:["n10"]},
-{id:"n10",type:"battle",label:"Sabaody",description:"L'ultima grande deviazione prima del fondo della Grand Line.",row:4,col:3,links:["n11"]},
-{id:"n11",type:"rest",label:"Fish-Man Island",description:"Un ultimo porto per prepararsi alla rotta successiva.",row:4,col:3,links:["n12"]},
+{id:"n10",type:"battle",label:"Sabaody",description:"L'ultima grande deviazione prima del fondo della Grand Line.",row:2,col:4,links:["n11"]},
+{id:"n11",type:"rest",label:"Fish-Man Island",description:"Un ultimo porto per prepararsi alla rotta successiva.",row:3,col:4,links:["n12"]},
 {id:"n12",type:"boss",label:"New World Gate",description:"La rotta termina davanti alla soglia del Nuovo Mondo.",row:4,col:4,links:[]},
 ];
 export const SYNERGIES=[
