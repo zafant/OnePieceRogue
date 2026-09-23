@@ -34,7 +34,7 @@ export function GrandLineMap({ nodes, currentId, onChoose }: Props) {
     <div className="grand-map">
       <div className="map-ocean-label">
         <span>偉大なる航路 · GRAND LINE</span>
-        <small>LOG POSE / rotta selezionabile</small>
+        <small>LOG POSE / ogni isola mostra la sua attività prima della scelta</small>
       </div>
 
       <div className="grand-map-stage">
@@ -94,7 +94,7 @@ export function GrandLineMap({ nodes, currentId, onChoose }: Props) {
               aria-label={`${node.label}${isAvailable ? ", rotta " + directionFor(current, node).label : ""}`}
             >
               <span className="node-orbit">{typeIcon[node.type]}</span>
-              <strong>{node.label}</strong>
+              <strong>{node.label}</strong>\n              <small className="node-activity">{node.type==="battle"?"COMBATTIMENTO":node.type==="treasure"?"TESORO + BERRIES":node.type==="event"?"INCOGNITA":node.type==="rest"?"RIPOSO":node.type==="fruit"?"FRUTTO":"BOSS"}</small>
               {isAvailable && <small>{directionFor(current, node).icon} {directionFor(current, node).label}</small>}
             </button>
           );
@@ -116,6 +116,15 @@ export function GrandLineMap({ nodes, currentId, onChoose }: Props) {
             <circle cx="29" cy="30" r="5" fill="#e7c58d" />
           </svg>
         </div>
+      </div>
+
+      <div className="map-legend" aria-label="Legenda delle attività">
+        <span><b>⚔</b> Combattimento</span>
+        <span><b>◆</b> Tesoro</span>
+        <span><b>?</b> Incognita</span>
+        <span><b>✚</b> Riposo</span>
+        <span><b>●</b> Frutto</span>
+        <span><b>☠</b> Boss</span>
       </div>
 
       <div className="navigation-console">
