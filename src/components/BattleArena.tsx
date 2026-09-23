@@ -9,9 +9,10 @@ type Props = {
   enemyMax: number;
   leaderId: string;
   pulse: boolean;
+  messages: string[];
 };
 
-export function BattleArena({ crew, enemy, enemyHp, enemyMax, leaderId, pulse }: Props) {
+export function BattleArena({ crew, enemy, enemyHp, enemyMax, leaderId, pulse, messages }: Props) {
   const living = crew.filter((member) => member.currentHp > 0).slice(0, 4);
   const enemyPercent = enemyMax > 0 ? (enemyHp / enemyMax) * 100 : 0;
 
@@ -68,7 +69,8 @@ export function BattleArena({ crew, enemy, enemyHp, enemyMax, leaderId, pulse }:
       </div>
 
       <div className="battle-status">
-        ⚡ La battaglia è visibile e automatica: puoi seguire ogni round, danno e cambio HP mentre la ciurma combatte.
+        ⚡ La battaglia è visibile e automatica.
+        <div className="battle-feed">{messages.slice(-3).map((message, index) => <span key={index}>{message}</span>)}</div>
       </div>
     </div>
   );
