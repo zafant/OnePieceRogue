@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { CHARACTERS, FRUITS, ITEMS, MAP } from "./game/data";
-import { applyPassiveItem, enemyDamage, enemyForNode, healAmount, makeRun, resolveRound, synergyBonus, uniqueChoices, victoryHeal, type RunState } from "./game/engine";
+import { applyPassiveItem, enemyForNode, healAmount, makeRun, resolveRound, synergyBonus, uniqueChoices, victoryHeal, type RunState } from "./game/engine";
 import { clearRun, loadRun, saveRun } from "./game/storage";
 import { GrandLineMap } from "./components/GrandLineMap";
 import { BattleArena } from "./components/BattleArena";
@@ -10,11 +10,12 @@ function App(){
  const [enemyHp,setEnemyHp]=useState(0);
  const [enemyMax,setEnemyMax]=useState(0);
  const [selected,setSelected]=useState("luffy");
- const [screen,setScreen]=useState<"map"|"battle"|"reward">("map");
+ const [screen,setScreen]=useState<"map"|"battle"|"reward"|"event">("map");
  const [reward,setReward]=useState<"item"|"fruit"|"victory"|null>(null);
  const [itemChoices,setItemChoices]=useState(ITEMS.slice(0,3));
  const [fruitChoice,setFruitChoice]=useState<string|null>(null);
  const [battlePulse,setBattlePulse]=useState(false);
+ const [battleMessages,setBattleMessages]=useState<string[]>([]);
  const node=useMemo(()=>MAP.find(n=>n.id===run.currentNode)??MAP[0],[run.currentNode]);
  const enemy=enemyForNode(run.currentNode);
  const selectedMember=run.crew.find(c=>c.id===selected)??run.crew[0];
@@ -29,6 +30,7 @@ function App(){
    const result=resolveRound(run.crew,enemy,enemyHp);
    const messages=result.messages.length?result.messages.join(" · "):"La battaglia continua.";
    setBattlePulse(true);
+   setBattleMessages(messages.split(" · "));
    window.setTimeout(()=>setBattlePulse(false),260);
    if(result.lost){
     setRun(r=>({...r,crew:result.crew,gameOver:true,log:["☠️ La ciurma è stata sconfitta.",messages,...r.log].slice(0,8)}));
@@ -38,7 +40,7 @@ function App(){
    if(result.won){
     const healed=victoryHeal(result.crew);
     const badge=enemy.boss?"Grand Line":null;
-    setRun(r=>({...r,crew:healed,berries:r.berries+enemy.reward,badges:badge&&!r.badges.includes(badge)?[...r.badges,badge]:r.badges,victory:!!enemy.boss,log:[enemy.boss?"👑 Arlong Park conquistato!":"🏆 "+enemy.name+" sconfitto!","+"+enemy.reward+" Berries.",messages,...r.log].slice(0,8)}));
+    setRun(r=>({...r,crew:healed,berries:r.berries+enemy.reward,badges:badge&&!r.badges.includes(badge)?[...r.badges,badge]:r.badges,victory:!!enemy.boss,log:[enemy.boss?"👑 New World Gate conquistato!":"🏆 "+enemy.name+" sconfitto!","+"+enemy.reward+" Berries.",messages,...r.log].slice(0,8)}));
     setEnemyHp(0);
     setReward(enemy.boss?"victory":"item");
     setItemChoices(uniqueChoices(ITEMS,3));
@@ -55,7 +57,7 @@ function App(){
   const next=MAP.find(n=>n.id===id);const current=MAP.find(n=>n.id===run.currentNode);
   if(!next||!current||id===current.id||!current.links.includes(id))return;
   setRun(r=>({...r,currentNode:id,stage:r.stage+1}));
-  if(next.type==="battle"||next.type==="boss"){const e=enemyForNode(id);if(e){setEnemyHp(e.maxHp);setEnemyMax(e.maxHp);setScreen("battle");}return;}
+  if(next.type==="battle"||next.type==="boss"){const e=enemyForNode(id);if(e){setEnemyHp(e.maxHp);setEnemyMax(e.maxHp);setBattleMessages(["La battaglia comincia."]);setScreen("battle");}return;}
   if(next.type==="treasure"){setRun(r=>({...r,berries:r.berries+250,log:["💰 Tesoro: +250 Berries.",...r.log].slice(0,8)}));setItemChoices(uniqueChoices(ITEMS,3));setReward("item");setScreen("reward");return;}
   if(next.type==="money"){setRun(r=>({...r,berries:r.berries+220,log:["💰 Berries: +220. Un affare nel porto finanzia la prossima rotta.",...r.log].slice(0,8)}));return;}
   if(next.type==="rest"){setRun(r=>({...r,crew:r.crew.map(c=>({...c,currentHp:c.maxHp})),log:["❤️ La ciurma è completamente guarita.",...r.log].slice(0,8)}));return;}
@@ -84,7 +86,8 @@ function App(){
   const amount=healAmount(110,run.inventory);
   setRun(r=>({...r,crew:r.crew.map(c=>c.id===selectedMember.id?{...c,currentHp:Math.min(c.maxHp,c.currentHp+amount)}:c),log:["❤️ "+selectedMember.name+" recupera "+amount+" HP.",...r.log].slice(0,8)}));
  }
- function newRun(){clearRun();setRun(makeRun());setEnemyHp(0);setReward(null);setFruitChoice(null);setScreen("map");}
+ function resolveEvent(choice:"contract"|"help"){if(choice==="contract"){setRun(r=>({...r,berries:r.berries+240,log:["❓ Incognita: incarico del porto completato, +240 Berries.",...r.log].slice(0,8)}));}else{setRun(r=>({...r,crew:r.crew.map(c=>({...c,currentHp:Math.min(c.maxHp,c.currentHp+Math.floor(c.maxHp*.2))})),log:["❓ Incognita: la ciurma aiuta il porto e recupera il 20% HP.",...r.log].slice(0,8)}));}setScreen("map");}
+ function newRun(){clearRun();setRun(makeRun());setEnemyHp(0);setReward(null);setFruitChoice(null);setBattleMessages([]);setScreen("map");}
 
  if(run.gameOver)return <div className="game-over"><div className="eyebrow">GRAND LINE</div><h1>La ciurma è caduta</h1><p>Run {run.seed} terminata al capitolo {run.stage}.</p><button className="primary big" onClick={newRun}>🏴‍☠️ Nuova Run</button></div>;
 
@@ -92,9 +95,10 @@ function App(){
   <header className="topbar"><div><div className="eyebrow">ONE PIECE ROGUE</div><h1>Grand Line</h1></div><div className="top-actions"><span className="currency">💰 {run.berries.toLocaleString("it-IT")}</span><span className="run-chip">🏅 {run.badges.length}</span><button className="ghost" onClick={newRun}>Nuova Run</button></div></header>
   <main className="layout">
    <section className="panel map-panel">
-    <div className="panel-title"><span>{screen==="battle"?"BATTAGLIA":screen==="reward"?"RICOMPENSA":"MAPPA"}</span><span className="small-label">Grand Line · Seed {run.seed} · Tappa {run.stage}</span></div>
+    <div className="panel-title"><span>{screen==="battle"?"BATTAGLIA":screen==="reward"?"RICOMPENSA":screen==="event"?"INCOGNITA":"MAPPA"}</span><span className="small-label">Grand Line · Seed {run.seed} · Tappa {run.stage}</span></div>
     {screen==="map"&&<><GrandLineMap nodes={MAP} currentId={run.currentNode} onChoose={chooseNode}/><div className="node-detail"><span className="node-type">LOG POSE · {node.type.toUpperCase()}</span><h2>{node.label}</h2><p>{node.description}</p><p className="route">Scegli la direzione di navigazione. Le rotte non scelte restano fuori da questa run.</p></div></>}
-    {screen==="battle"&&enemy&&<BattleArena crew={run.crew} enemy={enemy} enemyHp={enemyHp} enemyMax={enemyMax} leaderId={leader.id} pulse={battlePulse}/>} 
+    {screen==="battle"&&enemy&&<BattleArena crew={run.crew} enemy={enemy} enemyHp={enemyHp} enemyMax={enemyMax} leaderId={leader.id} pulse={battlePulse} messages={battleMessages}/>} 
+    {screen==="event"&&<div className="event-screen"><div className="reward-icon">?</div><span className="node-type">INCOGNITA · {node.label.toUpperCase()}</span><h2>Una scelta sulla rotta</h2><p>{node.description}</p><div className="event-choices"><button className="choice-card" onClick={()=>resolveEvent("contract")}><strong>Accetta l’incarico</strong><small>Guadagna 240 Berries e continua la run.</small></button><button className="choice-card" onClick={()=>resolveEvent("help")}><strong>Aiuta il porto</strong><small>Recupera il 20% degli HP massimi della ciurma.</small></button></div></div>}
     {screen==="reward"&&<div className="reward-screen">{reward==="victory"?<><div className="reward-icon">🏆</div><h2>{enemy?.boss?"Badge: Grand Line":"Vittoria!"}</h2><p>Il checkpoint è superato. La run ora entra nella fase successiva.</p><button className="primary big" onClick={()=>{setReward(null);setScreen("map")}}>Continua</button></>:reward==="item"?<><div className="reward-icon">🎒</div><h2>Scegli un Passive Item</h2><p>Resta nella borsa per il resto della run e modifica permanentemente la squadra.</p><div className="choice-grid">{itemChoices.map(item=><button className="choice-card" key={item.id} disabled={run.inventory.includes(item.id)} onClick={()=>takeItem(item.id)}><strong>{item.name}</strong><small>{item.description}</small></button>)}</div><button className="secondary big" onClick={()=>{setReward(null);setScreen("map")}}>Salta</button></>:reward==="fruit"&&fruitChoice?<><div className="reward-icon">🍈</div><h2>{FRUITS.find(f=>f.id===fruitChoice)?.name}</h2><p>{FRUITS.find(f=>f.id===fruitChoice)?.effect}</p><div className="choice-grid"><button className="choice-card" onClick={()=>takeFruit(fruitChoice)}>Assegna a {selectedMember.name}</button><button className="choice-card" onClick={()=>{setReward(null);setFruitChoice(null);setScreen("map")}}>Lascia il frutto</button></div></>:null}</div>}
    </section>
    <aside className="panel crew-panel"><div className="panel-title"><span>YOUR CREW</span><span className="small-label">{run.crew.length}/6</span></div>
