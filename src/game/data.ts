@@ -17,7 +17,7 @@ export const CHARACTERS:Character[]=[
 {id:"smoker",name:"Smoker",role:"Control",rarity:4,maxHp:760,attack:116,defense:82,speed:84,ability:"White Out",tags:["marine","logia"]},
 ];
 export const FRUITS:DevilFruit[]=[
-{id:"mera",name:"Mera Mera no Mi",type:"Logia",effect:"Burn: +15 danni ai prossimi 3 attacchi.",attack:22,maxHp:0},
+{id:"mera",name:"Mera Mera no Mi",type:"Logia",effect:"Burn: +15 danni a ogni attacco.",attack:22,maxHp:0},
 {id:"ope",name:"Ope Ope no Mi",type:"Paramecia",effect:"ROOM: +12% probabilità di critico.",attack:12,maxHp:40},
 {id:"tori",name:"Tori Tori no Mi",type:"Zoan",effect:"Phoenix: recupera 8% HP dopo ogni vittoria.",attack:8,maxHp:120},
 {id:"suna",name:"Suna Suna no Mi",type:"Logia",effect:"Sand Trap: -12% attacco nemico.",attack:15,maxHp:20},
