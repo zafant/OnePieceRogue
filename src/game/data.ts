@@ -1,4 +1,4 @@
-export type NodeType = "battle"|"event"|"treasure"|"rest"|"boss"|"fruit";
+export type NodeType = "battle"|"event"|"treasure"|"money"|"rest"|"boss"|"fruit";
 export type Role = "DPS"|"Support"|"Tank"|"Ranged"|"Healer"|"Control";
 export type Character={id:string;name:string;role:Role;rarity:number;maxHp:number;attack:number;defense:number;speed:number;ability:string;tags:string[]};
 export type DevilFruit={id:string;name:string;type:"Paramecia"|"Zoan"|"Logia";effect:string;attack:number;maxHp:number};
@@ -38,7 +38,7 @@ export const ENEMIES:Enemy[]=[
 ];
 export const MAP:MapNode[]=[
 {id:"n1",type:"battle",label:"Reverse Mountain",description:"La nave entra nella Grand Line attraverso la montagna e il suo mare imprevedibile.",row:1,col:1,links:["n2","n4"]},
-{id:"n2",type:"event",label:"Whiskey Peak",description:"Un'isola di benvenuto dove una deviazione può cambiare la run.",row:1,col:2,links:["n3","n5"]},
+{id:"n2",type:"money",label:"Whiskey Peak",description:"Un'isola di benvenuto dove una deviazione può cambiare la run.",row:1,col:2,links:["n3","n5"]},
 {id:"n3",type:"battle",label:"Little Garden",description:"Giungla, giganti e una minaccia che controlla il passaggio.",row:1,col:3,links:["n6","n8"]},
 {id:"n4",type:"treasure",label:"Jaya",description:"Un porto pieno di tesori, mappe e informazioni sulle rotte celesti.",row:2,col:1,links:["n5","n7"]},
 {id:"n5",type:"rest",label:"Drum Island",description:"Un rifugio innevato dove la ciurma può recuperare tutte le forze.",row:2,col:2,links:["n6","n9"]},
