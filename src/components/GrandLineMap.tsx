@@ -119,7 +119,7 @@ export function GrandLineMap({ nodes, currentId, onChoose }: Props) {
         </div>
       </div>
 
-      <div className="map-legend" aria-label="Legenda delle attività">
+      <div className="map-legend" aria-label="Legenda delle attività della mappa">
         <span><b>⚔</b> Combattimento</span>
         <span><b>◆</b> Tesoro</span>
         <span><b>💰</b> Berries</span>
