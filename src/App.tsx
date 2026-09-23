@@ -57,7 +57,7 @@ function App(){
   setRun(r=>({...r,currentNode:id,stage:r.stage+1}));
   if(next.type==="battle"||next.type==="boss"){const e=enemyForNode(id);if(e){setEnemyHp(e.maxHp);setEnemyMax(e.maxHp);setScreen("battle");}return;}
   if(next.type==="treasure"){setRun(r=>({...r,berries:r.berries+250,log:["💰 Tesoro: +250 Berries.",...r.log].slice(0,8)}));setItemChoices(uniqueChoices(ITEMS,3));setReward("item");setScreen("reward");return;}
-  if(next.type==="event"){setRun(r=>({...r,berries:r.berries+180,log:["❓ Evento: +180 Berries. La taverna del porto offre nuove opportunità.",...r.log].slice(0,8)}));return;}
+  if(next.type==="money"){setRun(r=>({...r,berries:r.berries+220,log:["💰 Berries: +220. Un affare nel porto finanzia la prossima rotta.",...r.log].slice(0,8)}));return;}
   if(next.type==="rest"){setRun(r=>({...r,crew:r.crew.map(c=>({...c,currentHp:c.maxHp})),log:["❤️ La ciurma è completamente guarita.",...r.log].slice(0,8)}));return;}
   if(next.type==="fruit"){const fruit=FRUITS[Math.floor(Math.random()*FRUITS.length)];setFruitChoice(fruit.id);setReward("fruit");setScreen("reward");}
  }
