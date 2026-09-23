@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CHARACTERS, FRUITS, ITEMS, MAP, type NodeType } from "./game/data";
+import { CHARACTERS, FRUITS, ITEMS, MAP } from "./game/data";
 import { applyPassiveItem, enemyDamage, enemyForNode, healAmount, makeRun, resolveRound, synergyBonus, uniqueChoices, victoryHeal, type RunState } from "./game/engine";
 import { clearRun, loadRun, saveRun } from "./game/storage";
 import { GrandLineMap } from "./components/GrandLineMap";
