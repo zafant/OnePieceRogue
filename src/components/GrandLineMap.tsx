@@ -25,9 +25,11 @@ const typeIcon: Record<MapNode["type"], string> = {
 export function GrandLineMap({ nodes, currentId, onChoose }: Props) {
   const current = nodes.find((node) => node.id === currentId) ?? nodes[0];
   const available = nodes.filter((node) => current.links.includes(node.id));
+  const maxRow = Math.max(...nodes.map((node) => node.row));
+  const maxCol = Math.max(...nodes.map((node) => node.col));
   const pos = (node: MapNode) => ({
-    left: 8 + ((node.col - 1) / 3) * 84,
-    top: 8 + ((4 - node.row) / 3) * 84,
+    left: 10 + ((node.col - 1) / Math.max(1, maxCol - 1)) * 80,
+    top: 6 + ((maxRow - node.row) / Math.max(1, maxRow - 1)) * 88,
   });
 
   return (
@@ -49,18 +51,18 @@ export function GrandLineMap({ nodes, currentId, onChoose }: Props) {
               <path d="M0 14 C10 5 22 5 32 14 S54 23 64 14" fill="none" stroke="#8fc5df" strokeOpacity=".13" strokeWidth="2" />
             </pattern>
           </defs>
-          <rect width="640" height="360" rx="24" fill="url(#grandSea)" />
-          <rect width="640" height="360" rx="24" fill="url(#waves)" />
-          <path d="M18 305 C120 270 170 330 265 286 S430 220 622 270" fill="none" stroke="#b8e7f4" strokeOpacity=".12" strokeWidth="3" strokeDasharray="9 13" />
+          <rect width="640" height="720" rx="24" fill="url(#grandSea)" />
+          <rect width="640" height="720" rx="24" fill="url(#waves)" />
+          <path d="M18 590 C120 540 170 640 265 560 S430 460 622 540" fill="none" stroke="#b8e7f4" strokeOpacity=".12" strokeWidth="3" strokeDasharray="9 13" />
 
           {nodes.flatMap((node) =>
             node.links.map((targetId) => {
               const target = nodes.find((item) => item.id === targetId);
-              if (!target || node.id > target.id) return null;
-              const x1 = 80 + (node.col - 1) * 160;
-              const y1 = 60 + (4 - node.row) * 80;
-              const x2 = 80 + (target.col - 1) * 160;
-              const y2 = 60 + (4 - target.row) * 80;
+              if (!target || nodes.findIndex((item) => item.id === node.id) > nodes.findIndex((item) => item.id === target.id)) return null;
+              const x1 = 80 + ((node.col - 1) / Math.max(1, maxCol - 1)) * 480;
+              const y1 = 45 + ((maxRow - node.row) / Math.max(1, maxRow - 1)) * 630;
+              const x2 = 80 + ((target.col - 1) / Math.max(1, maxCol - 1)) * 480;
+              const y2 = 45 + ((maxRow - target.row) / Math.max(1, maxRow - 1)) * 630;
               return (
                 <line
                   key={node.id + target.id}
@@ -76,7 +78,7 @@ export function GrandLineMap({ nodes, currentId, onChoose }: Props) {
               );
             }),
           )}
-          <path d="M22 62 C90 28 122 92 185 56 S285 28 350 62 S470 94 610 46" fill="none" stroke="#d8f1fa" strokeOpacity=".14" strokeWidth="2" />
+          <path d="M22 92 C90 48 122 142 185 92 S285 48 350 102 S470 152 610 72" fill="none" stroke="#d8f1fa" strokeOpacity=".14" strokeWidth="2" />
         </svg>
 
         {nodes.map((node) => {
@@ -94,7 +96,8 @@ export function GrandLineMap({ nodes, currentId, onChoose }: Props) {
               aria-label={`${node.label}${isAvailable ? ", rotta " + directionFor(current, node).label : ""}`}
             >
               <span className="node-orbit">{typeIcon[node.type]}</span>
-              <strong>{node.label}</strong>\n              <small className="node-activity">{node.type==="battle"?"COMBATTIMENTO":node.type==="treasure"?"TESORO + BERRIES":node.type==="event"?"INCOGNITA":node.type==="rest"?"RIPOSO":node.type==="fruit"?"FRUTTO":"BOSS"}</small>
+              <strong>{node.label}</strong>
+              <small className="node-activity">{node.type==="battle"?"COMBATTIMENTO":node.type==="treasure"?"TESORO":node.type==="money"?"BERRIES":node.type==="event"?"INCOGNITA":node.type==="rest"?"RIPOSO":node.type==="fruit"?"FRUTTO":"BOSS"}</small>
               {isAvailable && <small>{directionFor(current, node).icon} {directionFor(current, node).label}</small>}
             </button>
           );
@@ -109,11 +112,8 @@ export function GrandLineMap({ nodes, currentId, onChoose }: Props) {
           aria-hidden="true"
         >
           <svg viewBox="0 0 80 56">
-            <path d="M10 35 L66 35 L57 47 L22 47 Z" fill="#9a5a2e" stroke="#f5d79d" strokeWidth="2" />
-            <path d="M18 34 L31 11 L43 34 Z" fill="#f4e2b6" stroke="#26384d" strokeWidth="2" />
-            <path d="M43 34 L43 6" stroke="#e7c58d" strokeWidth="3" />
-            <path d="M43 7 L62 16 L43 22 Z" fill="#d44f43" />
-            <circle cx="29" cy="30" r="5" fill="#e7c58d" />
+            <circle cx="40" cy="28" r="21" fill="#f0b44d" opacity=".16" stroke="#f0b44d" strokeWidth="2" />
+            <circle cx="40" cy="28" r="7" fill="#f0b44d" />
           </svg>
         </div>
       </div>
