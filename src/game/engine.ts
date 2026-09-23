@@ -7,7 +7,7 @@ export function makeRun(seed=Math.floor(Math.random()*999999)):RunState{
  const crew=CHARACTERS.slice(0,3).map(c=>({...c,currentHp:c.maxHp}));
  return {seed,stage:0,berries:350,currentNode:"n1",crew,inventory:[],badges:[],log:["La tua avventura nella Grand Line comincia."],victory:false,gameOver:false};
 }
-export function enemyForNode(nodeId:string){const map:Record<string,string>={n1:"marine",n3:"pirates",n6:"fishmen",n8:"warlord",n9:"arlong"};const id=map[nodeId];return id?ENEMIES.find(e=>e.id===id):undefined;}
+export function enemyForNode(nodeId:string){const map:Record<string,string>={n1:"marine",n3:"pirates",n6:"fishmen",n8:"warlord",n10:"pirates",n12:"arlong"};const id=map[nodeId];return id?ENEMIES.find(e=>e.id===id):undefined;}
 export function synergyBonus(crew:MemberState[]){const tags=crew.flatMap(c=>c.tags);return SYNERGIES.filter(s=>s.required.every((tag,i)=>tags.filter(t=>t===tag).length>i));}
 export function attackDamage(actor:MemberState,enemy:Enemy,crew:MemberState[]){
  const monster=synergyBonus(crew).some(s=>s.id==="monster_trio"&&["luffy","zoro","sanji"].includes(actor.id))?1.15:1;
