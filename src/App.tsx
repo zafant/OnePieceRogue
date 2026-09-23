@@ -34,9 +34,8 @@ function App(){
    }
    if(result.won){
     const healed=victoryHeal(result.crew);
-    const rewardBerries=r=>r.berries+enemy.reward;
     const badge=enemy.boss?"Arlong Park":null;
-    setRun(r=>({...r,crew:healed,berries:rewardBerries(r),badges:badge&&!r.badges.includes(badge)?[...r.badges,badge]:r.badges,victory:enemy.boss,log:[enemy.boss?"👑 Arlong Park conquistato!":"🏆 "+enemy.name+" sconfitto!","+"+enemy.reward+" Berries.",messages,...r.log].slice(0,8)}));
+    setRun(r=>({...r,crew:healed,berries:r.berries+enemy.reward,badges:badge&&!r.badges.includes(badge)?[...r.badges,badge]:r.badges,victory:!!enemy.boss,log:[enemy.boss?"👑 Arlong Park conquistato!":"🏆 "+enemy.name+" sconfitto!","+"+enemy.reward+" Berries.",messages,...r.log].slice(0,8)}));
     setEnemyHp(0);
     setReward(enemy.boss?"victory":"item");
     setItemChoices(uniqueChoices(ITEMS,3));
