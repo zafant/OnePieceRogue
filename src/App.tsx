@@ -1,111 +1,65 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { CHARACTERS, FRUITS, MAP, type NodeType } from "./game/data";
+import { attackDamage, enemyDamage, enemyForNode, makeRun, synergyBonus, type RunState } from "./game/engine";
+import { clearRun, loadRun, saveRun } from "./game/storage";
 
-type NodeType = "battle" | "event" | "treasure" | "rest" | "boss";
-type Character = {
-  id: string; name: string; role: string; rarity: number;
-  hp: number; attack: number; ability: string;
-};
-type CrewMember = Character & { currentHp: number };
-type MapNode = {
-  id: string; type: NodeType; label: string; description: string; row: number; col: number;
-};
+const icons:Record<NodeType,string>={battle:"⚔️",event:"❓",treasure:"💰",rest:"❤️",boss:"👑",fruit:"🍈"};
 
-const characters: Character[] = [
-  { id:"luffy", name:"Luffy", role:"DPS", rarity:5, hp:920, attack:128, ability:"Gum-Gum Pistol" },
-  { id:"zoro", name:"Zoro", role:"DPS", rarity:5, hp:820, attack:142, ability:"Oni Giri" },
-  { id:"nami", name:"Nami", role:"Support", rarity:4, hp:560, attack:92, ability:"Thunder Tempo" },
-  { id:"sanji", name:"Sanji", role:"DPS", rarity:5, hp:790, attack:134, ability:"Diable Jambe" },
-  { id:"usopp", name:"Usopp", role:"Ranged", rarity:4, hp:590, attack:105, ability:"Kabuto Shot" },
-  { id:"chopper", name:"Chopper", role:"Healer", rarity:4, hp:670, attack:76, ability:"Emergency Medicine" },
-];
+function App(){
+ const [run,setRun]=useState<RunState>(()=>loadRun()??makeRun());
+ const [enemyHp,setEnemyHp]=useState(0);
+ const [enemyMax,setEnemyMax]=useState(0);
+ const [selected,setSelected]=useState("luffy");
+ const [screen,setScreen]=useState<"map"|"battle"|"reward">("map");
+ const [reward,setReward]=useState<string|null>(null);
+ const node=useMemo(()=>MAP.find(n=>n.id===run.currentNode)??MAP[0],[run.currentNode]);
+ const enemy=enemyForNode(run.currentNode);
+ const hero=run.crew.find(c=>c.id===selected)??run.crew[0];
+ const synergies=synergyBonus(run.crew);
 
-const nodes: MapNode[] = [
-  {id:"n1",type:"battle",label:"Marine Patrol",description:"Una pattuglia della Marina blocca il passaggio.",row:1,col:1},
-  {id:"n2",type:"event",label:"Mysterious Island",description:"Una piccola isola nasconde un incontro inatteso.",row:1,col:2},
-  {id:"n3",type:"battle",label:"Pirate Crew",description:"Una ciurma rivale ha avvistato la tua nave.",row:1,col:3},
-  {id:"n4",type:"treasure",label:"Treasure",description:"Un forziere galleggia tra le onde.",row:2,col:1},
-  {id:"n5",type:"rest",label:"Tavern",description:"Un posto sicuro per recuperare le forze.",row:2,col:2},
-  {id:"n6",type:"battle",label:"Fishmen",description:"Un gruppo di uomini-pesce difende il porto.",row:2,col:3},
-  {id:"n7",type:"event",label:"Merchant",description:"Un mercante propone merci rare.",row:3,col:1},
-  {id:"n8",type:"battle",label:"Warlord Crew",description:"Una ciurma al servizio di un potente pirata.",row:3,col:2},
-  {id:"n9",type:"boss",label:"Arlong",description:"La strada finisce davanti al parco di Arlong.",row:3,col:3},
-];
+ useEffect(()=>{saveRun(run)},[run]);
 
-const icons: Record<NodeType,string> = {battle:"⚔️",event:"❓",treasure:"💰",rest:"❤️",boss:"👑"};
-const startCrew: CrewMember[] = characters.slice(0,3).map(c => ({...c,currentHp:c.hp}));
+ function log(message:string){setRun(r=>({...r,log:[message,...r.log].slice(0,8)}))}
+ function chooseNode(id:string){
+   const next=MAP.find(n=>n.id===id); const current=MAP.find(n=>n.id===run.currentNode);
+   if(!next||(!current?.links.includes(id)&&id!==run.currentNode))return;
+   setRun(r=>({...r,currentNode:id,stage:r.stage+1}));
+   if(next.type==="battle"||next.type==="boss"){const e=enemyForNode(id);if(e){setEnemyHp(e.maxHp);setEnemyMax(e.maxHp);setScreen("battle");}return;}
+   if(next.type==="treasure")setRun(r=>({...r,berries:r.berries+250,log:["💰 Tesoro: +250 Berries.",...r.log].slice(0,8)}));
+   if(next.type==="event")setRun(r=>({...r,berries:r.berries+120,log:["❓ Evento: +120 Berries.",...r.log].slice(0,8)}));
+   if(next.type==="rest")setRun(r=>({...r,crew:r.crew.map(c=>({...c,currentHp:c.maxHp})),log:["❤️ La ciurma è completamente guarita.",...r.log].slice(0,8)}));
+   if(next.type==="fruit"){setReward(FRUITS[Math.floor(Math.random()*FRUITS.length)].id);setScreen("reward");}
+ }
+ function attack(){
+   if(!enemy||enemyHp<=0)return;
+   const damage=attackDamage(hero,enemy,run.crew); const next=Math.max(0,enemyHp-damage); setEnemyHp(next);
+   if(next===0){setRun(r=>({...r,berries:r.berries+enemy.reward,log:["🏆 "+hero.name+" ha sconfitto "+enemy.name+"! +"+enemy.reward+" Berries.",...r.log].slice(0,8)}));setReward("victory");setScreen("reward");return;}
+   const target=run.crew[Math.floor(Math.random()*run.crew.length)]; const retaliation=enemyDamage(target,enemy); const hp=Math.max(0,target.currentHp-retaliation);
+   setRun(r=>({...r,crew:r.crew.map(c=>c.id===target.id?{...c,currentHp:hp}:c),log:["⚡ "+hero.name+" infligge "+damage+". "+enemy.name+" contrattacca "+target.name+" per "+retaliation+".",...r.log].slice(0,8),gameOver:hp===0&&r.crew.every(c=>c.id===target.id||c.currentHp===0)}));
+ }
+ function heal(){setRun(r=>({...r,crew:r.crew.map(c=>c.id===hero.id?{...c,currentHp:Math.min(c.maxHp,c.currentHp+110)}:c),log:["❤️ "+hero.name+" recupera 110 HP.",...r.log].slice(0,8)}))}
+ function recruit(id:string){const c=CHARACTERS.find(x=>x.id===id);if(!c||run.crew.length>=6||run.crew.some(x=>x.id===id))return;setRun(r=>({...r,crew:[...r.crew,{...c,currentHp:c.maxHp}],log:["🏴‍☠️ "+c.name+" si unisce alla ciurma.",...r.log].slice(0,8)}));}
+ function takeFruit(id:string){const fruit=FRUITS.find(x=>x.id===id);if(!fruit)return;setRun(r=>({...r,crew:r.crew.map(c=>c.id===hero.id?{...c,maxHp:c.maxHp+fruit.maxHp,currentHp:Math.min(c.maxHp+fruit.maxHp,c.currentHp+fruit.maxHp),attack:c.attack+fruit.attack,fruit}:c),inventory:[...r.inventory,fruit.id],log:["🍈 "+fruit.name+": "+fruit.effect,...r.log].slice(0,8)}));setReward(null);setScreen("map");}
+ function newRun(){clearRun();setRun(makeRun());setEnemyHp(0);setReward(null);setScreen("map");}
 
-function App() {
-  const [crew,setCrew]=useState(startCrew);
-  const [berries,setBerries]=useState(350);
-  const [currentNode,setCurrentNode]=useState("n1");
-  const [selected,setSelected]=useState("luffy");
-  const [enemyHp,setEnemyHp]=useState(480);
-  const [log,setLog]=useState(["Benvenuto nella Grand Line.","Scegli un nodo."]);
+ if(run.gameOver)return <div className="game-over"><div className="eyebrow">GRAND LINE</div><h1>La ciurma è caduta</h1><p>Run {run.seed} terminata al capitolo {run.stage}.</p><button className="primary big" onClick={newRun}>🏴‍☠️ Nuova Run</button></div>;
 
-  const node=useMemo(()=>nodes.find(n=>n.id===currentNode) ?? nodes[0],[currentNode]);
-  const battle=node.type==="battle" || node.type==="boss";
-  const maxEnemyHp=node.type==="boss"?1400:480;
-  const selectedHero=crew.find(c=>c.id===selected) ?? crew[0];
-
-  function write(message:string){ setLog(old=>[message,...old].slice(0,6)); }
-
-  function chooseNode(next:MapNode){
-    setCurrentNode(next.id);
-    if(next.type==="battle"){setEnemyHp(480);write(`⚔️ ${next.label}: prepara la ciurma.`);}
-    if(next.type==="boss"){setEnemyHp(1400);write("👑 Arlong è davanti a te.");}
-    if(next.type==="treasure"){setBerries(v=>v+250);write("💰 Hai trovato 250 Berries.");}
-    if(next.type==="event"){setBerries(v=>v+120);write("❓ L'evento porta 120 Berries.");}
-    if(next.type==="rest"){setCrew(old=>old.map(c=>({...c,currentHp:c.hp})));write("❤️ La ciurma recupera.");}
-  }
-
-  function attack(){
-    if(enemyHp<=0)return;
-    const damage=selectedHero.attack+Math.floor(Math.random()*30);
-    const next=Math.max(0,enemyHp-damage);
-    setEnemyHp(next);
-    if(next===0){
-      setBerries(v=>v+(node.type==="boss"?1000:320));
-      write(`🏆 ${selectedHero.name} vince! +Berries.`);
-    } else write(`⚡ ${selectedHero.name} usa ${selectedHero.ability}: -${damage} HP.`);
-  }
-
-  function heal(){
-    setCrew(old=>old.map(c=>c.id===selected?{...c,currentHp:Math.min(c.hp,c.currentHp+100)}:c));
-    write(`❤️ ${selectedHero.name} recupera 100 HP.`);
-  }
-
-  return <div className="app-shell">
-    <header className="topbar">
-      <div><div className="eyebrow">ONE PIECE ROGUE</div><h1>Grand Line</h1></div>
-      <div className="currency">💰 {berries.toLocaleString("it-IT")} Berries</div>
-    </header>
-    <main className="layout">
-      <section className="panel map-panel">
-        <div className="panel-title"><span>MAPPA</span><span className="small-label">East Blue · Run 01</span></div>
-        <div className="map">
-          {nodes.map(n=><button key={n.id} className={`map-node ${n.id===currentNode?"selected":""}`} style={{gridColumn:n.col,gridRow:n.row}} onClick={()=>chooseNode(n)}>
-            <span>{icons[n.type]}</span><small>{n.label}</small>
-          </button>)}
-        </div>
-        <div className="node-detail">
-          <span className="node-type">{icons[node.type]} {node.type.toUpperCase()}</span>
-          <h2>{node.label}</h2><p>{node.description}</p>
-          {battle && <div className="enemy-card"><div className="enemy-heading"><strong>{node.label}</strong><span>{enemyHp} HP</span></div><div className="health"><span style={{width:`${(enemyHp/maxEnemyHp)*100}%`}}/></div></div>}
-        </div>
-      </section>
-      <aside className="panel crew-panel">
-        <div className="panel-title"><span>YOUR CREW</span><span className="small-label">{crew.length}/6</span></div>
-        <div className="crew-list">
-          {crew.map(c=><button key={c.id} className={`crew-card ${selected===c.id?"active":""}`} onClick={()=>setSelected(c.id)}>
-            <div className="avatar">{c.name[0]}</div>
-            <div className="crew-copy"><div className="crew-name">{c.name}</div><div className="crew-role">{c.role} · ★{c.rarity}</div><div className="health mini"><span style={{width:`${(c.currentHp/c.hp)*100}%`}}/></div></div>
-            <span className="hp">{c.currentHp}</span>
-          </button>)}
-        </div>
-        {battle && <div className="actions"><button className="primary" onClick={attack} disabled={enemyHp===0}>⚔️ Attacca</button><button className="secondary" onClick={heal}>❤️ Cura</button></div>}
-        <div className="log"><div className="panel-title"><span>LOG</span></div>{log.map((x,i)=><p key={i}>{x}</p>)}</div>
-      </aside>
-    </main>
-  </div>;
+ return <div className="app-shell">
+  <header className="topbar"><div><div className="eyebrow">ONE PIECE ROGUE</div><h1>Grand Line</h1></div><div className="top-actions"><span className="currency">💰 {run.berries.toLocaleString("it-IT")}</span><button className="ghost" onClick={newRun}>Nuova Run</button></div></header>
+  <main className="layout">
+   <section className="panel map-panel">
+    <div className="panel-title"><span>{screen==="battle"?"BATTAGLIA":screen==="reward"?"RICOMPENSA":"MAPPA"}</span><span className="small-label">East Blue · Seed {run.seed}</span></div>
+    {screen==="map"&&<><div className="map">{MAP.map(n=>{const current=n.id===run.currentNode;const available=current||MAP.find(x=>x.id===run.currentNode)?.links.includes(n.id);return <button key={n.id} disabled={!available} className={"map-node "+(current?"selected ":"")+(available?"available":"")} style={{gridColumn:n.col,gridRow:n.row}} onClick={()=>chooseNode(n.id)}><span>{icons[n.type]}</span><small>{n.label}</small></button>})}</div><div className="node-detail"><span className="node-type">{icons[node.type]} {node.type.toUpperCase()}</span><h2>{node.label}</h2><p>{node.description}</p></div></>}
+    {screen==="battle"&&enemy&&<div className="battle-screen"><div className="battle-hero"><span>🏴‍☠️</span><strong>{hero.name}</strong><small>{hero.ability}</small></div><div className="versus">VS</div><div className="battle-enemy"><span>{enemy.boss?"👑":"☠️"}</span><strong>{enemy.name}</strong><small>{enemyHp} / {enemyMax} HP</small><div className="health large"><span style={{width:(enemyHp/enemyMax*100)+"%"}}/></div></div><div className="battle-actions"><button className="primary big" onClick={attack}>⚔️ Attacca</button><button className="secondary big" onClick={heal}>❤️ Cura</button></div></div>}
+    {screen==="reward"&&<div className="reward-screen">{reward==="victory"?<><div className="reward-icon">🏆</div><h2>Vittoria!</h2><p>Hai superato il nodo. Torna alla mappa e scegli il prossimo percorso.</p><button className="primary big" onClick={()=>{setReward(null);setScreen("map")}}>Continua</button></>:reward?<><div className="reward-icon">🍈</div><h2>{FRUITS.find(f=>f.id===reward)?.name}</h2><p>{FRUITS.find(f=>f.id===reward)?.effect}</p><button className="primary big" onClick={()=>takeFruit(reward)}>Dai il frutto a {hero.name}</button><button className="secondary big" onClick={()=>{setReward(null);setScreen("map")}}>Lascia perdere</button></>:null}</div>}
+   </section>
+   <aside className="panel crew-panel"><div className="panel-title"><span>YOUR CREW</span><span className="small-label">{run.crew.length}/6</span></div>
+    <div className="crew-list">{run.crew.map(c=><button key={c.id} className={"crew-card "+(selected===c.id?"active":"")} onClick={()=>setSelected(c.id)}><div className="avatar">{c.name[0]}</div><div><div className="crew-name">{c.name}</div><div className="crew-role">{c.role} · ★{c.rarity}{c.fruit?" · 🍈":""}</div><div className="health mini"><span style={{width:(c.currentHp/c.maxHp*100)+"%"}}/></div></div><span className="hp">{c.currentHp}</span></button>)}</div>
+    <div className="synergies"><div className="panel-title"><span>SINERGIE</span></div>{synergies.length?synergies.map(s=><div className="synergy" key={s.id}><strong>{s.name}</strong><small>{s.description}</small></div>):<p className="muted">Aggiungi membri per attivare bonus.</p>}</div>
+    <div className="recruit"><div className="panel-title"><span>RECLUTAMENTO</span></div>{CHARACTERS.filter(c=>!run.crew.some(m=>m.id===c.id)).slice(0,3).map(c=><button className="recruit-row" key={c.id} disabled={run.crew.length>=6} onClick={()=>recruit(c.id)}><span>＋</span><div><strong>{c.name}</strong><small>{c.role} · ★{c.rarity}</small></div></button>)}</div>
+    <div className="log"><div className="panel-title"><span>LOG</span></div>{run.log.map((x,i)=><p key={i}>{x}</p>)}</div>
+   </aside>
+  </main>
+ </div>;
 }
 export default App;
