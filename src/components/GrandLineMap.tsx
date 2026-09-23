@@ -17,6 +17,7 @@ const typeIcon: Record<MapNode["type"], string> = {
   battle: "⚔",
   event: "?",
   treasure: "◆",
+  money: "💰",
   rest: "✚",
   boss: "☠",
   fruit: "●",
