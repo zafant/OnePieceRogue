@@ -27,7 +27,7 @@ export function GrandLineMap({ nodes, currentId, onChoose }: Props) {
   const available = nodes.filter((node) => current.links.includes(node.id));
   const pos = (node: MapNode) => ({
     left: 8 + ((node.col - 1) / 3) * 84,
-    top: 12 + ((3 - node.row) / 2) * 70,
+    top: 8 + ((4 - node.row) / 3) * 84,
   });
 
   return (
@@ -58,9 +58,9 @@ export function GrandLineMap({ nodes, currentId, onChoose }: Props) {
               const target = nodes.find((item) => item.id === targetId);
               if (!target || node.id > target.id) return null;
               const x1 = 80 + (node.col - 1) * 160;
-              const y1 = 290 - (node.row - 1) * 120;
+              const y1 = 60 + (4 - node.row) * 80;
               const x2 = 80 + (target.col - 1) * 160;
-              const y2 = 290 - (target.row - 1) * 120;
+              const y2 = 60 + (4 - target.row) * 80;
               return (
                 <line
                   key={node.id + target.id}
