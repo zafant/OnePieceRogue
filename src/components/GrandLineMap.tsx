@@ -1,4 +1,6 @@
 import type { MapNode } from "../game/data";
+import { IslandIllustration } from "./IslandIllustration";
+import { GoingMerry } from "./GoingMerry";
 
 type Props = {
   nodes: MapNode[];
@@ -7,10 +9,10 @@ type Props = {
 };
 
 const directionFor = (from: MapNode, to: MapNode) => {
-  if (to.col > from.col) return { short: "E", label: "Est", icon: "→" };
-  if (to.col < from.col) return { short: "O", label: "Ovest", icon: "←" };
+  if (to.col > from.col) return { short: "E", label: "Est", icon: "↘" };
+  if (to.col < from.col) return { short: "O", label: "Ovest", icon: "↙" };
   if (to.row < from.row) return { short: "N", label: "Nord", icon: "↑" };
-  return { short: "S", label: "Sud", icon: "↓" };
+  return { short: "S", label: "Avanti", icon: "↓" };
 };
 
 const typeIcon: Record<MapNode["type"], string> = {
@@ -41,7 +43,7 @@ export function GrandLineMap({ nodes, currentId, onChoose }: Props) {
       </div>
 
       <div className="grand-map-stage">
-        <svg className="grand-map-svg" viewBox="0 0 640 360" aria-hidden="true">
+        <svg className="grand-map-svg" viewBox="0 0 640 720" aria-hidden="true">
           <defs>
             <linearGradient id="grandSea" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor="#173a58" />
@@ -80,6 +82,7 @@ export function GrandLineMap({ nodes, currentId, onChoose }: Props) {
             }),
           )}
           <path d="M22 92 C90 48 122 142 185 92 S285 48 350 102 S470 152 610 72" fill="none" stroke="#d8f1fa" strokeOpacity=".14" strokeWidth="2" />
+          <path d="M90 675 C155 610 105 545 200 500 S310 430 275 355 S365 265 520 215" fill="none" stroke="#f0b44d" strokeOpacity=".18" strokeWidth="3" strokeDasharray="7 13" />
         </svg>
 
         {nodes.map((node) => {
@@ -96,6 +99,7 @@ export function GrandLineMap({ nodes, currentId, onChoose }: Props) {
               onClick={() => onChoose(node.id)}
               aria-label={`${node.label}${isAvailable ? ", rotta " + directionFor(current, node).label : ""}`}
             >
+              <span className="node-art"><IslandIllustration theme={node.theme} active={isCurrent || isAvailable} /></span>
               <span className="node-orbit">{typeIcon[node.type]}</span>
               <strong>{node.label}</strong>
               <small className="node-activity">{node.type==="battle"?"COMBATTIMENTO":node.type==="treasure"?"TESORO":node.type==="money"?"BERRIES":node.type==="event"?"INCOGNITA":node.type==="rest"?"RIPOSO":node.type==="fruit"?"FRUTTO":"BOSS"}</small>
@@ -112,10 +116,7 @@ export function GrandLineMap({ nodes, currentId, onChoose }: Props) {
           }}
           aria-hidden="true"
         >
-          <svg viewBox="0 0 80 56">
-            <circle cx="40" cy="28" r="21" fill="#f0b44d" opacity=".16" stroke="#f0b44d" strokeWidth="2" />
-            <circle cx="40" cy="28" r="7" fill="#f0b44d" />
-          </svg>
+          <GoingMerry compact />
         </div>
       </div>
 

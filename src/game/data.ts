@@ -4,7 +4,8 @@ export type Character={id:string;name:string;role:Role;rarity:number;maxHp:numbe
 export type DevilFruit={id:string;name:string;type:"Paramecia"|"Zoan"|"Logia";effect:string;attack:number;maxHp:number};
 export type Enemy={id:string;name:string;maxHp:number;attack:number;defense:number;reward:number;boss?:boolean};
 export type PassiveItem={id:string;name:string;description:string;effect:"hp"|"attack"|"defense"|"speed"|"heal"};
-export type MapNode={id:string;type:NodeType;label:string;description:string;row:number;col:number;links:string[]};
+export type IslandTheme = "mountain"|"desert"|"jungle"|"snow"|"sky"|"water7"|"city"|"mangrove"|"underwater"|"palace"|"gate";
+export type MapNode={id:string;type:NodeType;label:string;description:string;row:number;col:number;links:string[];theme:IslandTheme};
 
 export const CHARACTERS:Character[]=[
 {id:"luffy",name:"Luffy",role:"DPS",rarity:5,maxHp:920,attack:128,defense:76,speed:96,ability:"Gum-Gum Pistol",tags:["straw_hat","pirate","paramecia"]},
@@ -37,18 +38,18 @@ export const ENEMIES:Enemy[]=[
 {id:"arlong",name:"Arlong",maxHp:1450,attack:108,defense:70,reward:1000,boss:true},
 ];
 export const MAP:MapNode[]=[
-{id:"n1",type:"battle",label:"Reverse Mountain",description:"La nave entra nella Grand Line attraverso la montagna e il suo mare imprevedibile.",row:1,col:1,links:["n2","n4"]},
-{id:"n2",type:"money",label:"Whiskey Peak",description:"Un'isola di benvenuto dove una deviazione può cambiare la run.",row:1,col:2,links:["n3","n5"]},
-{id:"n3",type:"battle",label:"Little Garden",description:"Giungla, giganti e una minaccia che controlla il passaggio.",row:1,col:3,links:["n6","n8"]},
-{id:"n4",type:"treasure",label:"Jaya",description:"Un porto pieno di tesori, mappe e informazioni sulle rotte celesti.",row:2,col:1,links:["n5","n7"]},
-{id:"n5",type:"rest",label:"Drum Island",description:"Un rifugio innevato dove la ciurma può recuperare tutte le forze.",row:2,col:2,links:["n6","n9"]},
-{id:"n6",type:"battle",label:"Alabasta",description:"Una rotta desertica sorvegliata da una ciurma avversaria.",row:2,col:3,links:["n10"]},
-{id:"n7",type:"fruit",label:"Skypiea",description:"Una corrente verticale apre una rotta verso un'isola nel cielo.",row:3,col:1,links:["n9"]},
-{id:"n8",type:"battle",label:"Water 7",description:"Cantieri, maree e una potente ciurma rivale difendono il canale.",row:1,col:4,links:["n10"]},
-{id:"n9",type:"treasure",label:"Enies Lobby",description:"Un passaggio rischioso nasconde una ricompensa rara.",row:3,col:2,links:["n10"]},
-{id:"n10",type:"battle",label:"Sabaody",description:"L'ultima grande deviazione prima del fondo della Grand Line.",row:2,col:4,links:["n11"]},
-{id:"n11",type:"rest",label:"Fish-Man Island",description:"Un ultimo porto per prepararsi alla rotta successiva.",row:3,col:4,links:["n12"]},
-{id:"n12",type:"boss",label:"New World Gate",description:"La rotta termina davanti alla soglia del Nuovo Mondo.",row:4,col:4,links:[]},
+{id:"n1",type:"battle",label:"Reverse Mountain",description:"La porta d'ingresso alla Grand Line: correnti impossibili e montagne che stringono la rotta.",row:1,col:2,links:["n2","n4"],theme:"mountain"},
+{id:"n2",type:"money",label:"Whiskey Peak",description:"Un porto nel deserto dove una deviazione può riempire la cassa prima del prossimo scontro.",row:2,col:1,links:["n3","n5"],theme:"desert"},
+{id:"n4",type:"treasure",label:"Jaya",description:"Un'isola selvaggia e rumorosa, punto di passaggio verso le leggende del cielo.",row:2,col:3,links:["n5","n7"],theme:"jungle"},
+{id:"n3",type:"battle",label:"Little Garden",description:"Una giungla primordiale dove la ciurma può trovare combattimenti feroci e creature enormi.",row:3,col:1,links:["n6","n8"],theme:"jungle"},
+{id:"n5",type:"rest",label:"Drum Island",description:"Montagne innevate e un porto sicuro per rimettere in piedi la ciurma.",row:3,col:2,links:["n6","n9"],theme:"snow"},
+{id:"n7",type:"fruit",label:"Skypiea",description:"Una rotta verticale conduce nel cielo: nuvole, rovine e un frutto raro.",row:3,col:3,links:["n9"],theme:"sky"},
+{id:"n6",type:"battle",label:"Alabasta",description:"Il grande regno del deserto: dune, palazzi e una guerra che blocca la rotta.",row:4,col:1,links:["n10"],theme:"desert"},
+{id:"n9",type:"treasure",label:"Enies Lobby",description:"Un'isola giudiziaria sospesa sul mare: superare il passaggio può portare a una ricompensa rara.",row:4,col:2,links:["n10"],theme:"city"},
+{id:"n8",type:"battle",label:"Water 7",description:"Canali, cantieri e maree trasformano ogni combattimento in una battaglia urbana.",row:4,col:3,links:["n10"],theme:"water7"},
+{id:"n10",type:"battle",label:"Sabaody",description:"Mangrovie giganti e bolle segnano l'ultima grande tappa prima della discesa negli abissi.",row:5,col:2,links:["n11"],theme:"mangrove"},
+{id:"n11",type:"rest",label:"Fish-Man Island",description:"Un regno sottomarino dove preparare la ciurma prima della soglia del Nuovo Mondo.",row:6,col:2,links:["n12"],theme:"underwater"},
+{id:"n12",type:"boss",label:"New World Gate",description:"L'ultima porta della Grand Line. Oltre questo punto inizia una nuova fase della run.",row:7,col:2,links:[],theme:"gate"},
 ];
 export const SYNERGIES=[
 {id:"straw_hat",name:"Straw Hat Crew",required:["straw_hat","straw_hat","straw_hat"],description:"+8% HP e +8% attacco alla squadra."},
