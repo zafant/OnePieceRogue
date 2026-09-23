@@ -3,6 +3,7 @@ import { CHARACTERS, FRUITS, ITEMS, MAP } from "./game/data";
 import { applyPassiveItem, enemyDamage, enemyForNode, healAmount, makeRun, resolveRound, synergyBonus, uniqueChoices, victoryHeal, type RunState } from "./game/engine";
 import { clearRun, loadRun, saveRun } from "./game/storage";
 import { GrandLineMap } from "./components/GrandLineMap";
+import { CharacterAvatar } from "./components/CharacterAvatar";
 
 function App(){
  const [run,setRun]=useState<RunState>(()=>loadRun()??makeRun());
@@ -13,6 +14,7 @@ function App(){
  const [reward,setReward]=useState<"item"|"fruit"|"victory"|null>(null);
  const [itemChoices,setItemChoices]=useState(ITEMS.slice(0,3));
  const [fruitChoice,setFruitChoice]=useState<string|null>(null);
+ const [battlePulse,setBattlePulse]=useState(false);
  const node=useMemo(()=>MAP.find(n=>n.id===run.currentNode)??MAP[0],[run.currentNode]);
  const enemy=enemyForNode(run.currentNode);
  const selectedMember=run.crew.find(c=>c.id===selected)??run.crew[0];
@@ -26,6 +28,8 @@ function App(){
   const timer=window.setTimeout(()=>{
    const result=resolveRound(run.crew,enemy,enemyHp);
    const messages=result.messages.length?result.messages.join(" · "):"La battaglia continua.";
+   setBattlePulse(true);
+   window.setTimeout(()=>setBattlePulse(false),260);
    if(result.lost){
     setRun(r=>({...r,crew:result.crew,gameOver:true,log:["☠️ La ciurma è stata sconfitta.",messages,...r.log].slice(0,8)}));
     setEnemyHp(0);
@@ -88,9 +92,9 @@ function App(){
   <header className="topbar"><div><div className="eyebrow">ONE PIECE ROGUE</div><h1>Grand Line</h1></div><div className="top-actions"><span className="currency">💰 {run.berries.toLocaleString("it-IT")}</span><span className="run-chip">🏅 {run.badges.length}</span><button className="ghost" onClick={newRun}>Nuova Run</button></div></header>
   <main className="layout">
    <section className="panel map-panel">
-    <div className="panel-title"><span>{screen==="battle"?"AUTOBATTLE":screen==="reward"?"RICOMPENSA":"MAPPA"}</span><span className="small-label">Grand Line · Seed {run.seed} · Tappa {run.stage}</span></div>
+    <div className="panel-title"><span>{screen==="battle"?"BATTAGLIA":screen==="reward"?"RICOMPENSA":"MAPPA"}</span><span className="small-label">Grand Line · Seed {run.seed} · Tappa {run.stage}</span></div>
     {screen==="map"&&<><GrandLineMap nodes={MAP} currentId={run.currentNode} onChoose={chooseNode}/><div className="node-detail"><span className="node-type">LOG POSE · {node.type.toUpperCase()}</span><h2>{node.label}</h2><p>{node.description}</p><p className="route">Scegli la direzione di navigazione. Le rotte non scelte restano fuori da questa run.</p></div></>}
-    {screen==="battle"&&enemy&&<div className="battle-screen"><div className="battle-party"><div className="party-title">LA TUA CIURMA · AUTO</div>{run.crew.map((c,i)=><div className={"battle-member "+(c.id===leader.id?"leader":"")} key={c.id}><span>{i+1}</span><strong>{c.name}</strong><small>{c.currentHp} HP</small></div>)}</div><div className="versus">VS</div><div className="battle-enemy"><span>{enemy.boss?"👑":"☠️"}</span><strong>{enemy.name}</strong><small>{enemyHp} / {enemyMax} HP</small><div className="health large"><span style={{width:(enemyHp/enemyMax*100)+"%"}}/></div><small>Round automatico · il primo membro vivo assorbe il colpo</small></div><div className="battle-status">⚡ La battaglia si risolve da sola. Preparazione, ordine e sinergie decidono l'esito.</div></div>}
+    {screen==="battle"&&enemy&&<div className={"battle-screen "+(battlePulse?"battle-pulse":"")}><div className="battle-arena"><div className="arena-backdrop"><div className="arena-sky"/><div className="arena-ground"/></div><div className="battle-side allies"><div className="battle-side-title">LA TUA CIURMA</div><div className="battle-avatars">{run.crew.filter(c=>c.currentHp>0).slice(0,4).map((c,i)=><div className={"fighter fighter-"+i} key={c.id}><CharacterAvatar character={c} size="battle" active={c.id===leader.id}/><div className="fighter-name">{c.name}</div><div className="health mini"><span style={{width:(c.currentHp/c.maxHp*100)+"%"}}/></div></div>)}</div></div><div className="combat-vs"><span>VS</span><small>ROUND AUTO</small></div><div className={"enemy-fighter "+(battlePulse?"hit":"")}><div className="enemy-sprite"><svg viewBox="0 0 150 180" aria-hidden="true"><ellipse cx="75" cy="168" rx="48" ry="8" fill="#000" opacity=".28"/><path d="M35 165 Q38 105 75 91 Q112 105 115 165Z" fill="#26384d" stroke="#101924" strokeWidth="5"/><circle cx="75" cy="65" r="39" fill="#8c604e" stroke="#101924" strokeWidth="5"/><path d="M35 56 Q41 18 75 22 Q109 18 115 56 Q94 43 75 43 Q56 43 35 56Z" fill="#161d27"/><circle cx="60" cy="68" r="4" fill="#f2c14f"/><circle cx="90" cy="68" r="4" fill="#f2c14f"/><path d="M55 86 Q75 99 95 86" fill="none" stroke="#101924" strokeWidth="4"/>{enemy.boss&&<path d="M43 34 L29 12 L56 27 M107 34 L121 12 L94 27" fill="none" stroke="#d4ad5a" strokeWidth="7"/></svg></div><strong>{enemy.name}</strong><small>{enemyHp} / {enemyMax} HP</small><div className="health large"><span style={{width:(enemyHp/enemyMax*100)+"%"}}/></div></div></div><div className="battle-status">⚡ La battaglia è visibile e automatica: puoi seguire ogni round, danno e cambio HP mentre la ciurma combatte.</div></div>}
     {screen==="reward"&&<div className="reward-screen">{reward==="victory"?<><div className="reward-icon">🏆</div><h2>{enemy?.boss?"Badge: Grand Line":"Vittoria!"}</h2><p>Il checkpoint è superato. La run ora entra nella fase successiva.</p><button className="primary big" onClick={()=>{setReward(null);setScreen("map")}}>Continua</button></>:reward==="item"?<><div className="reward-icon">🎒</div><h2>Scegli un Passive Item</h2><p>Resta nella borsa per il resto della run e modifica permanentemente la squadra.</p><div className="choice-grid">{itemChoices.map(item=><button className="choice-card" key={item.id} disabled={run.inventory.includes(item.id)} onClick={()=>takeItem(item.id)}><strong>{item.name}</strong><small>{item.description}</small></button>)}</div><button className="secondary big" onClick={()=>{setReward(null);setScreen("map")}}>Salta</button></>:reward==="fruit"&&fruitChoice?<><div className="reward-icon">🍈</div><h2>{FRUITS.find(f=>f.id===fruitChoice)?.name}</h2><p>{FRUITS.find(f=>f.id===fruitChoice)?.effect}</p><div className="choice-grid"><button className="choice-card" onClick={()=>takeFruit(fruitChoice)}>Assegna a {selectedMember.name}</button><button className="choice-card" onClick={()=>{setReward(null);setFruitChoice(null);setScreen("map")}}>Lascia il frutto</button></div></>:null}</div>}
    </section>
    <aside className="panel crew-panel"><div className="panel-title"><span>YOUR CREW</span><span className="small-label">{run.crew.length}/6</span></div>
